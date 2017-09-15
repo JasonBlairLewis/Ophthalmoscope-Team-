@@ -1,0 +1,96 @@
+//
+//  Patient.swift
+//  Ophthalmasocope App
+//
+//  Created by Jason Lewis on 9/6/17.
+//  Copyright © 2017 Jason Lewis. All rights reserved.
+//
+
+import UIKit
+import os.log
+
+class Patient: NSObject, NSCoding {
+    
+    //MARK: Properties
+    
+    var name: String
+    var email: String
+    var phoneNumber: String
+    var notes: String
+    
+    //MARK: Archiving Paths
+    
+    static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
+    static let ArchiveURL = DocumentsDirectory.appendingPathComponent("patients")
+
+    
+    
+    //MARK: Types
+    
+    struct PropertyKey {
+        static let name = "name"
+        static let email = "email"
+        static let phoneNumber = "phoneNumber"
+        static let notes = "notes"
+        
+        
+    }
+//    MARK INITIALIZATION
+
+    init?(name: String, email: String, phoneNumber: String, notes: String) {
+        
+        
+        // Initialization should fail if there is no name or if the rating is negative.
+        guard !name.isEmpty else {
+            return nil
+        }
+        
+        
+        // Initialize stored properties.
+        self.name = name
+        self.email = email
+        self.phoneNumber = phoneNumber
+        self.notes = notes
+    }
+    
+        //MARK: NSCoding
+        func encode(with aCoder: NSCoder) {
+            aCoder.encode(name, forKey: PropertyKey.name)
+            aCoder.encode(email, forKey: PropertyKey.email)
+            aCoder.encode(phoneNumber, forKey: PropertyKey.phoneNumber)
+            aCoder.encode(notes, forKey: PropertyKey.notes)
+        }
+        
+        required convenience init?(coder aDecoder: NSCoder) {
+            // The name is required. If we cannot decode a name string, the initializer should fail.
+            guard let name = aDecoder.decodeObject(forKey: PropertyKey.name) as? String else {
+                os_log("Unable to decode the name for a Patient object.", log: OSLog.default, type: .debug)
+                return nil
+            }
+            guard let email = aDecoder.decodeObject(forKey: PropertyKey.email) as? String else {
+                os_log("Unable to decode the email for a Patient object.", log: OSLog.default, type: .debug)
+                return nil
+            }
+            
+            guard let phoneNumber = aDecoder.decodeObject(forKey: PropertyKey.phoneNumber) as? String else {
+                os_log("Unable to decode the phoneNumber for a Patient object.", log: OSLog.default, type: .debug)
+                return nil
+            }
+            
+            guard let notes = aDecoder.decodeObject(forKey: PropertyKey.notes) as? String else {
+                os_log("Unable to decode the email for a Meal object.", log: OSLog.default, type: .debug)
+                return nil
+            }
+            
+            
+            // Must call designated initializer.
+            self.init(name: name, email: email, phoneNumber: phoneNumber, notes: notes)
+
+        }
+        
+        
+      
+        
+    }
+
+

@@ -1,0 +1,211 @@
+//
+//  PatientTableViewController.swift
+//  Ophthalmasocope App
+//
+//  Created by Jason Lewis on 9/6/17.
+//  Copyright © 2017 Jason Lewis. All rights reserved.
+//
+
+import UIKit
+import os.log
+
+class PatientTableViewController: UITableViewController, UINavigationControllerDelegate, UITextFieldDelegate {
+    
+    
+    
+    //Mark Properties
+    var patients = [Patient]()
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // Use the edit button item provided by the table view controller.
+        navigationItem.leftBarButtonItem = editButtonItem
+        
+        // Load any saved patients otherwise load sample data.
+        if let savedPatients = loadPatients() {
+            patients += savedPatients
+        }
+        else {
+            // Load the sample data.
+            loadSamplePatients()
+        }
+
+    }
+    
+    
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    
+    // MARK: - Table view data source
+    
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return patients.count
+    }
+    
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cellIdentifier = "PatientTableViewCell"
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? PatientTableViewCell else{
+            fatalError("The dequeued cell is not an instance of PatientTableViewCell.")
+        }
+        // Fetches the appropriate patient for the data source layout.
+        let patient = patients[indexPath.row]
+        
+        cell.nameLabel.text = patient.name
+      
+        
+        
+        return cell
+    }
+
+    // Override to support conditional editing of the table view.
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        // Return false if you do not want the specified item to be editable.
+        return true
+    }
+    
+
+    
+    // Override to support editing the table view.
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            // Delete the row from the data source
+            patients.remove(at: indexPath.row)
+           savePatients()
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        } else if editingStyle == .insert {
+            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+        }    
+    }
+    
+
+
+    /*
+    // Override to support rearranging the table view.
+    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
+
+    }
+    */
+
+    /*
+    // Override to support conditional rearranging of the table view.
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        // Return false if you do not want the item to be re-orderable.
+        return true
+    }
+    */
+
+    
+    
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        super.prepare(for: segue, sender: sender)
+        
+        switch(segue.identifier ?? "") {
+            
+        case "AddItem":
+            os_log("Adding a new patient.", log: OSLog.default, type: .debug)
+            
+        case "ShowDetail":
+            guard let PatientDetailViewController = segue.destination as? NewPatientViewController else {
+                fatalError("Unexpected destination: \(segue.destination)")
+            }
+            
+            guard let selectedPatientCell = sender as? PatientTableViewCell else {
+                fatalError("Unexpected sender: \(sender)")
+            }
+            
+            guard let indexPath = tableView.indexPath(for: selectedPatientCell) else {
+                fatalError("The selected cell is not being displayed by the table")
+            }
+            
+            let selectedPatient = patients[indexPath.row]
+            PatientDetailViewController.patient = selectedPatient
+            
+        default:
+            fatalError("Unexpected Segue Identifier; \(segue.identifier)")
+        }
+    }
+ 
+
+    
+    
+    
+    //MARK: Actions
+    @IBAction func unwindToPatientList(sender: UIStoryboardSegue) {
+        
+        if let sourceViewController = sender.source as? NewPatientViewController, let patient = sourceViewController.patient {
+            
+            if let selectedIndexPath = tableView.indexPathForSelectedRow {
+                
+                // Update an existing patient.
+                patients[selectedIndexPath.row] = patient
+                
+                tableView.reloadRows(at: [selectedIndexPath] , with: .none)
+            }
+            else{
+            // Add a new patient.
+            let newIndexPath = IndexPath(row: patients.count, section: 0)
+            patients.append(patient)
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        }
+        
+            // Save the patients.
+            savePatients()
+            
+        }
+    }
+    
+ 
+    
+    
+    
+    
+    
+    
+    //Mark Private Methods
+    private func loadSamplePatients() {
+        
+        guard let patient1 = Patient(name: "John", email: "John@usc.edu", phoneNumber: "22456792", notes: "hello") else {
+            fatalError("Unable to instantiate patient1")
+        }
+        guard let patient2 = Patient(name: "Mary", email: "John@usc.edu", phoneNumber: "22456792", notes: "hello") else {
+            fatalError("Unable to instantiate patient2")
+        }
+        
+        guard let patient3 = Patient(name: "Joe", email: "John@usc.edu", phoneNumber: "22456792", notes: "hello") else {
+            fatalError("Unable to instantiate patient3")
+        }
+        
+        patients += [patient1, patient2, patient3]
+    }
+    
+    private func savePatients() {
+        let isSuccessfulSave = NSKeyedArchiver.archiveRootObject(patients, toFile: Patient.ArchiveURL.path)
+        if isSuccessfulSave {
+            os_log("Patients successfully saved.", log: OSLog.default, type: .debug)
+        } else {
+            os_log("Failed to save patients...", log: OSLog.default, type: .error)
+        }
+        
+    }
+    
+    private func loadPatients() -> [Patient]? {
+        return NSKeyedUnarchiver.unarchiveObject(withFile: Patient.ArchiveURL.path) as? [Patient]
+    }
+    
+
+}
+

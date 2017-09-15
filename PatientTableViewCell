@@ -1,0 +1,32 @@
+//
+//  PatientTableViewCell.swift
+//  Ophthalmasocope App
+//
+//  Created by Jason Lewis on 9/6/17.
+//  Copyright © 2017 Jason Lewis. All rights reserved.
+//
+
+import UIKit
+
+class PatientTableViewCell: UITableViewCell {
+    
+    
+
+    //MARK: Properties
+    
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var emailLabel: UILabel!
+    
+    
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // Initialization code
+    }
+
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(selected, animated: animated)
+
+    }
+
+}

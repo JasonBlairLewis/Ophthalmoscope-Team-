@@ -1,0 +1,21 @@
+//
+//  PhotoThumbnailCollectionViewCell.swift
+//  Ophthalmasocope App
+//
+//  Created by Jason Lewis on 9/5/17.
+//  Copyright © 2017 Jason Lewis. All rights reserved.
+//
+
+
+import UIKit
+
+class PhotoThumbnail: UICollectionViewCell {
+    
+    @IBOutlet var imgView : UIImageView!
+    
+    
+    func setThumbnailImage(_ thumbnailImage: UIImage){
+        self.imgView.image = thumbnailImage
+    }
+    
+}
